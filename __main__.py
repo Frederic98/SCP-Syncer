@@ -21,15 +21,13 @@ parser.add_argument('-c', '--config_name', help='The name of the predefined conf
 parser.add_argument('path', help='Path to the folder to sync', nargs='?', default='./')
 args = parser.parse_args()
 
-if args.host is None:
-    try:
-        config = SCPSync.read_config_file(args.path, args.config_name)
-        if 'host' not in config:
-            args.host = input('Enter IP of target machine: ')
-    except KeyError:
-        print('No IP address or configuration specified!')
-        parser.print_usage()
-        exit()
+try:
+    syncer = SCPSync(args.path, host=args.host, port=args.port, user=args.user, password=args.password, config_name=args.config_name)
+except SCPSync.ConfigError as e:
+    if str(e).split(' ')[0] == 'host':
+        args.host = input('Enter IP of target machine: ')
+    else:
+        raise
+    syncer = SCPSync(args.path, host=args.host, port=args.port, user=args.user, password=args.password, config_name=args.config_name)
 
-syncer = SCPSync(args.path, host=args.host, port=args.port, user=args.user, password=args.password, config_name=args.config_name)
 syncer.sync()
