@@ -2,13 +2,18 @@
 import argparse
 import os
 import pickle
-import subprocess
-import re
+import hashlib
 
-hashers = {'sha1': 'sha1sum',
-           'sha256': 'sha256sum',
-           'sha512': 'sha512sum',
-           'md5': 'md5sum'}
+hashers = {'sha1':   hashlib.sha1,
+           'sha256': hashlib.sha256,
+           'sha512': hashlib.sha512,
+           'md5':    hashlib.md5}
+
+try:
+    with open(os.path.join(os.path.splitext(__file__)[0], '.pkl')) as f:
+        filters = pickle.load(f)
+except FileNotFoundError:
+    filters = {}
 
 parser = argparse.ArgumentParser(description='Calculate hashes of files recursively')
 parser.add_argument('path', default='./', nargs='?', help='The path to search in')
@@ -16,18 +21,18 @@ parser.add_argument('output', default='hashes.pkl', nargs='?', help='Output file
 parser.add_argument('--hash', choices=hashers.keys(), default='sha1')
 args = parser.parse_args()
 
-hasher = hashers[args.hash]
-HASH_RE = re.compile(r'(?P<hash>[a-z\d]+) +(?P<file>.*)')
+hasher_class = hashers[args.hash]
 hashes = {}
 for root, dirs, files in os.walk(args.path):
     # print(root)
-    if files:
-        cmd = [hasher]
-        cmd.extend([os.path.join(root, file) for file in files])
-        hash_str = subprocess.check_output(cmd, universal_newlines=True)
-        for match in HASH_RE.finditer(hash_str):
-            fn = os.path.relpath(match.group('file'), args.path)
-            hashes[fn] = match.group('hash')
+    for file in files:
+        fn = os.path.join(root, file)
+        rel_fn = os.path.relpath(fn, args.path)
+        hasher = hasher_class()
+        with open(fn, 'rb') as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hasher.update(chunk)
+        hashes[rel_fn] = hasher.hexdigest()
 
 with open(args.output, 'wb') as f:
     pickle.dump(hashes, f)
