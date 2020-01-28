@@ -1,2 +1,2 @@
 #!/usr/bin/env python3
-from .scp_sync import SCPSync
+from .scp_syncer import SCPSync

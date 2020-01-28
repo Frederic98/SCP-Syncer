@@ -19,6 +19,9 @@ from typing import Dict, List, Optional, Tuple, Union
 
 
 class SCPSync:
+    class ConfigError(RuntimeError):
+        ...
+
     hashers = {'sha1':   hashlib.sha1,
                'sha256': hashlib.sha256,
                'sha512': hashlib.sha512,
@@ -39,7 +42,7 @@ class SCPSync:
         self.local_path = Path(local_path).resolve()
         try:
             self.config = self.read_config(config_name)
-        except KeyError:
+        except (FileNotFoundError, KeyError):
             self.config = {}
         self.config['files'] = {self.local_path.joinpath(dest).resolve(): self.local_path.joinpath(source).resolve()
                                 for dest, source in self.config.get('files', {}).items()}
@@ -50,7 +53,7 @@ class SCPSync:
             if value is not None:
                 self.config[key] = value
             elif key not in self.config:
-                raise ValueError(f'{key} not specified and not in config file!')
+                raise SCPSync.ConfigError(f'{key} not specified and not in config file!')
 
         self._ssh = paramiko.SSHClient()
         self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -318,3 +321,7 @@ class SCPFile:
             os.remove(self._tempfile)
         except PermissionError:
             print('Couldn\'t delete tempfile')
+
+
+if __name__ == '__main__':
+    print('Run SCP-Syncer using python -m SCP-Syncer')

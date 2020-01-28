@@ -2,7 +2,7 @@
 import argparse
 import logging
 import colorama
-from scp_sync import SCPSync
+from SCPSyncer import SCPSync
 
 colorama.init()
 
