@@ -159,7 +159,7 @@ class SCPSync:
         pickle.dump(remote_filters, filters_file)
         filters_file.seek(0)
         self._scp.putfo(filters_file, f'{self._remote_file_prefix}.pkl')
-        self._scp.put(os.path.join(os.path.dirname(__file__), 'remote_hasher_purepython.py'), f'{self._remote_file_prefix}.py')
+        self._scp.put(os.path.join(os.path.dirname(__file__), 'remote_hasher.py'), f'{self._remote_file_prefix}.py')
         self._remote_hasher_thread = self._ssh.exec_command(f'python3 {self._remote_hasher_file} --hash {self.hashtype} {self.remote_path} {self._remote_hashes_file}')
         # remote_filters = {path.relative_to(self.local_path):filters for (path,filters) in self.filters.items()}
 
