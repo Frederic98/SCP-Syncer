@@ -324,4 +324,4 @@ class SCPFile:
 
 
 if __name__ == '__main__':
-    print('Run SCP-Syncer using python -m SCP-Syncer')
+    print('Run SCP-Syncer using python -m SCPSyncer')
