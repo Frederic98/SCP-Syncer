@@ -25,3 +25,12 @@ CONFIG_NAME:
 ### .syncignore
 A text file with globs of files to ignore when syncing - same structure as .gitignore file.
 Multiple `.syncignore` files can be in (sub)directories
+
+## Notes
+If syncing a github repository on Windows, it may be necessary to stop git from normalizing line endings. To do so, open the local repository and edit the file `.git/config` to add the following settings:
+```
+[core]
+  autocrlf = false
+  eol = lf
+```
+This makes git synchronize the repository with `\n` as line endings, instead of the `\r\n` windows style.
